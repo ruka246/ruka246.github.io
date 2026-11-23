@@ -1,10 +1,811 @@
-<html>
-  <head>
-    <title>ゲーム紹介ページ</title>
-  </head>
-  <body>
-    <h1>以下のリンクはゲームの個別紹介ページです<br></h1>
-    <a href="https://ruka246.github.io/Disaster-response-simulator.html">災害対策シュミレーターモバイル版</a><br>
-    <a href="https://ruka246.github.io/index.html">ホームに戻る</a>
-  </body>
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pythonクイズ企画 意見・アイデア集約サイト</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Noto Sans JP', sans-serif;
+      background-color: #f4f5f8;
+      color: #1e293b;
+    }
+    .pop-shadow {
+      box-shadow: 0 4px 0 rgba(0, 0, 0, 0.12);
+    }
+    .pop-btn:active {
+      transform: translateY(2px);
+      box-shadow: 0 2px 0 rgba(0, 0, 0, 0.12);
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+  <!-- ヘッダー（ロゴ等の商標は使用せずオリジナルデザイン） -->
+  <header class="bg-indigo-700 text-white shadow-md sticky top-0 z-30">
+    <div class="max-w-5xl mx-auto px-4 py-3.5 flex items-center justify-between gap-3">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-amber-400 text-indigo-950 font-black flex items-center justify-center text-xl shadow-inner select-none">
+          ?
+        </div>
+        <div>
+          <h1 class="font-black text-lg sm:text-xl tracking-tight leading-tight">Pythonクイズ企画 意見ボックス</h1>
+          <p class="text-xs text-indigo-200 hidden sm:block">みんなでつくる初心者向けプログラミングクイズ</p>
+        </div>
+      </div>
+
+      <!-- ログイン状態に応じたナビゲーション -->
+      <div id="headerActions" class="flex items-center gap-2"></div>
+    </div>
+  </header>
+
+  <!-- メインコンテンツ -->
+  <main class="flex-1 max-w-5xl w-full mx-auto px-4 py-6 sm:py-8 space-y-8">
+
+    <!-- ========================================== -->
+    <!-- 1. トップページ（一般参加者・全員閲覧可能） -->
+    <!-- ========================================== -->
+    <div id="publicView" class="space-y-8">
+
+      <!-- ホスト（管理者）からのお知らせボード -->
+      <section class="bg-white rounded-2xl border-2 border-indigo-200 shadow-sm overflow-hidden">
+        <div class="bg-indigo-600 px-5 py-3 flex items-center justify-between">
+          <div class="flex items-center gap-2 text-white font-bold">
+            <svg class="w-5 h-5 text-amber-300" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z" />
+            </svg>
+            <span>ホスト（管理者）からのお知らせ</span>
+          </div>
+          <span id="noticeUpdatedAt" class="text-xs text-indigo-100 bg-indigo-700/70 px-2.5 py-1 rounded-full"></span>
+        </div>
+        <div class="p-5 sm:p-6">
+          <h2 id="noticeTitle" class="text-lg sm:text-xl font-black text-slate-800 mb-2"></h2>
+          <p id="noticeBody" class="text-slate-700 text-sm sm:text-base leading-relaxed whitespace-pre-wrap"></p>
+        </div>
+      </section>
+
+      <!-- 意見・アイデア投稿フォーム（コード入力欄なし・シンプル設計） -->
+      <section class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 sm:p-7">
+        <div class="mb-6">
+          <span class="inline-block bg-emerald-100 text-emerald-800 text-xs font-bold px-3 py-1 rounded-full mb-2">参加者フォーム</span>
+          <h2 class="text-xl sm:text-2xl font-black text-slate-800">クイズの意見・リクエストを送る</h2>
+          <p class="text-sm text-slate-500 mt-1">
+            「こんなテーマの問題を出してほしい」「難易度はこれくらいがいい」など、自由にお書きください。<br class="hidden sm:inline">
+            ※投稿された内容はホスト（管理者）のみが確認し、次回クイズ作成の参考にします。
+          </p>
+        </div>
+
+        <form id="opinionForm" class="space-y-5">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <!-- 投稿者名 -->
+            <div>
+              <label for="senderName" class="block text-sm font-bold text-slate-700 mb-1.5">
+                ニックネーム <span class="text-xs font-normal text-slate-400">（空欄なら「匿名参加者」）</span>
+              </label>
+              <input
+                type="text"
+                id="senderName"
+                placeholder="例：パイソン太郎"
+                maxlength="30"
+                class="w-full rounded-xl border border-slate-300 px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+              />
+            </div>
+
+            <!-- 意見のカテゴリ -->
+            <div>
+              <label for="category" class="block text-sm font-bold text-slate-700 mb-1.5">
+                意見の種類 <span class="text-rose-500">*</span>
+              </label>
+              <select
+                id="category"
+                required
+                class="w-full rounded-xl border border-slate-300 px-3.5 py-2.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+              >
+                <option value="問題テーマの要望">問題テーマの要望（例：if文、リストなど）</option>
+                <option value="難易度・行数の希望">難易度・コード行数の希望</option>
+                <option value="出題形式のアイデア">出題形式のアイデア（4択・複数選択・穴埋めなど）</option>
+                <option value="イベント進行・感想">イベント進行への意見・感想</option>
+                <option value="その他">その他</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- 希望するレベル感 -->
+          <div>
+            <label class="block text-sm font-bold text-slate-700 mb-2">想定してほしいレベル感</label>
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+              <label class="cursor-pointer">
+                <input type="radio" name="level" value="超初心者向け" class="peer sr-only" checked />
+                <div class="text-center text-xs sm:text-sm font-bold py-2.5 px-3 rounded-xl border border-slate-300 text-slate-600 peer-checked:bg-emerald-500 peer-checked:text-white peer-checked:border-emerald-600 transition">
+                  超初心者向け
+                </div>
+              </label>
+              <label class="cursor-pointer">
+                <input type="radio" name="level" value="初級向け" class="peer sr-only" />
+                <div class="text-center text-xs sm:text-sm font-bold py-2.5 px-3 rounded-xl border border-slate-300 text-slate-600 peer-checked:bg-sky-500 peer-checked:text-white peer-checked:border-sky-600 transition">
+                  初級向け
+                </div>
+              </label>
+              <label class="cursor-pointer">
+                <input type="radio" name="level" value="中級ステップアップ" class="peer sr-only" />
+                <div class="text-center text-xs sm:text-sm font-bold py-2.5 px-3 rounded-xl border border-slate-300 text-slate-600 peer-checked:bg-amber-500 peer-checked:text-white peer-checked:border-amber-600 transition">
+                  中級ステップ
+                </div>
+              </label>
+              <label class="cursor-pointer">
+                <input type="radio" name="level" value="指定なし" class="peer sr-only" />
+                <div class="text-center text-xs sm:text-sm font-bold py-2.5 px-3 rounded-xl border border-slate-300 text-slate-600 peer-checked:bg-slate-700 peer-checked:text-white peer-checked:border-slate-800 transition">
+                  指定なし
+                </div>
+              </label>
+            </div>
+          </div>
+
+          <!-- 意見・アイデア本文 -->
+          <div>
+            <label for="opinionText" class="block text-sm font-bold text-slate-700 mb-1.5">
+              意見・アイデアの内容 <span class="text-rose-500">*</span>
+            </label>
+            <textarea
+              id="opinionText"
+              rows="4"
+              required
+              placeholder="例：RPGのステータス計算みたいなストーリー仕立ての問題があると楽しく解けそうです！&#10;例：引っ掛け問題（printを忘れて何も表示されないパターンなど）も入れてほしいです。"
+              class="w-full rounded-xl border border-slate-300 px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+            ></textarea>
+          </div>
+
+          <div class="pt-1 flex items-center justify-end">
+            <button
+              type="submit"
+              class="pop-btn pop-shadow w-full sm:w-auto bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-8 py-3 rounded-xl transition flex items-center justify-center gap-2"
+            >
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+              </svg>
+              <span>この内容で意見を送信する</span>
+            </button>
+          </div>
+        </form>
+
+        <!-- 送信完了メッセージ -->
+        <div id="submitSuccessBanner" class="hidden mt-5 bg-emerald-50 border border-emerald-300 text-emerald-900 rounded-xl p-4 flex items-start gap-3">
+          <svg class="w-6 h-6 text-emerald-600 shrink-0 mt-0.5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          <div>
+            <p class="font-bold text-sm">ご意見を受け付けました！ありがとうございます。</p>
+            <p class="text-xs text-emerald-700 mt-0.5">送信された内容はホスト（管理者）専用ページに集約されました。</p>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- ========================================================== -->
+    <!-- 2. ホスト（管理者）専用ダッシュボード（ログイン時のみ表示） -->
+    <!-- ========================================================== -->
+    <div id="hostView" class="hidden space-y-6">
+
+      <!-- 管理者モードバナー -->
+      <div class="bg-slate-900 text-white rounded-2xl p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-md">
+        <div>
+          <div class="flex items-center gap-2">
+            <span class="bg-amber-400 text-slate-950 text-xs font-black px-2.5 py-0.5 rounded-md">HOST ONLY</span>
+            <h2 class="text-lg sm:text-xl font-black">ホスト（管理者）専用 意見集約ページ</h2>
+          </div>
+          <p class="text-xs sm:text-sm text-slate-300 mt-1">
+            参加者から届いた意見の確認・整理・採用検討、およびトップページのお知らせ編集ができます。
+          </p>
+        </div>
+        <div class="flex flex-wrap items-center gap-2">
+          <button
+            onclick="exportCSV()"
+            class="bg-slate-800 hover:bg-slate-700 border border-slate-600 text-white text-xs sm:text-sm font-bold px-3.5 py-2 rounded-xl transition flex items-center gap-1.5"
+          >
+            <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+            </svg>
+            <span>CSVダウンロード</span>
+          </button>
+          <button
+            onclick="switchTab('public')"
+            class="bg-indigo-600 hover:bg-indigo-500 text-white text-xs sm:text-sm font-bold px-3.5 py-2 rounded-xl transition"
+          >
+            参加者画面を確認する
+          </button>
+        </div>
+      </div>
+
+      <!-- 集計サマリーカード -->
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
+        <div class="bg-white rounded-2xl border border-slate-200 p-4">
+          <p class="text-xs font-bold text-slate-400">集まった意見総数</p>
+          <p id="statTotal" class="text-2xl sm:text-3xl font-black text-slate-800 mt-1">0</p>
+        </div>
+        <div class="bg-white rounded-2xl border border-slate-200 p-4">
+          <p class="text-xs font-bold text-rose-500">未確認</p>
+          <p id="statUnread" class="text-2xl sm:text-3xl font-black text-rose-600 mt-1">0</p>
+        </div>
+        <div class="bg-white rounded-2xl border border-slate-200 p-4">
+          <p class="text-xs font-bold text-amber-600">検討中</p>
+          <p id="statReviewing" class="text-2xl sm:text-3xl font-black text-amber-600 mt-1">0</p>
+        </div>
+        <div class="bg-white rounded-2xl border border-slate-200 p-4">
+          <p class="text-xs font-bold text-emerald-600">採用・クイズ反映済み</p>
+          <p id="statAdopted" class="text-2xl sm:text-3xl font-black text-emerald-600 mt-1">0</p>
+        </div>
+      </div>
+
+      <!-- トップページ「お知らせ」編集エリア -->
+      <section class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5">
+        <div class="flex items-center justify-between mb-3">
+          <h3 class="font-black text-slate-800 flex items-center gap-2">
+            <span class="w-2.5 h-2.5 rounded-full bg-indigo-600"></span>
+            トップページ「お知らせ」の編集
+          </h3>
+          <span id="noticeSaveMsg" class="text-xs font-bold text-emerald-600 hidden">保存しました！</span>
+        </div>
+        <div class="space-y-3">
+          <div>
+            <label class="block text-xs font-bold text-slate-500 mb-1">お知らせタイトル</label>
+            <input
+              type="text"
+              id="editNoticeTitle"
+              class="w-full rounded-xl border border-slate-300 px-3.5 py-2 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            />
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-500 mb-1">お知らせ本文</label>
+            <textarea
+              id="editNoticeBody"
+              rows="3"
+              class="w-full rounded-xl border border-slate-300 px-3.5 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            ></textarea>
+          </div>
+          <div class="flex justify-end">
+            <button
+              onclick="saveNotice()"
+              class="bg-indigo-600 hover:bg-indigo-700 text-white text-xs sm:text-sm font-bold px-5 py-2 rounded-xl transition"
+            >
+              お知らせを更新する
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- 絞り込みフィルター -->
+      <section class="bg-white rounded-2xl border border-slate-200 p-4 flex flex-col sm:flex-row gap-3 items-stretch sm:items-center justify-between">
+        <div class="flex flex-wrap gap-2">
+          <select id="filterStatus" onchange="renderOpinions()" class="rounded-xl border border-slate-300 px-3 py-2 text-xs sm:text-sm font-bold bg-white">
+            <option value="ALL">すべてのステータス</option>
+            <option value="未確認">未確認</option>
+            <option value="検討中">検討中</option>
+            <option value="採用済み">採用済み</option>
+            <option value="見送り">見送り</option>
+          </select>
+          <select id="filterCategory" onchange="renderOpinions()" class="rounded-xl border border-slate-300 px-3 py-2 text-xs sm:text-sm font-bold bg-white">
+            <option value="ALL">すべての種類</option>
+            <option value="問題テーマの要望">問題テーマの要望</option>
+            <option value="難易度・行数の希望">難易度・行数の希望</option>
+            <option value="出題形式のアイデア">出題形式のアイデア</option>
+            <option value="イベント進行・感想">イベント進行・感想</option>
+            <option value="その他">その他</option>
+          </select>
+        </div>
+        <input
+          type="text"
+          id="filterKeyword"
+          oninput="renderOpinions()"
+          placeholder="キーワードで検索..."
+          class="rounded-xl border border-slate-300 px-3.5 py-2 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+        />
+      </section>
+
+      <!-- 集約された意見カード一覧（ホスト専用） -->
+      <section id="opinionList" class="space-y-4"></section>
+
+    </div>
+  </main>
+
+  <!-- フッター -->
+  <footer class="bg-white border-t border-slate-200 mt-12 py-5 text-center text-xs text-slate-400">
+    Pythonクイズ企画 意見集約サイト &copy; 2026
+  </footer>
+
+  <!-- ========================================== -->
+  <!-- ホスト（管理者）ログインモーダル           -->
+  <!-- ========================================== -->
+  <div id="loginModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-200 space-y-5">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <div class="w-8 h-8 rounded-lg bg-slate-900 text-amber-400 flex items-center justify-center font-black text-sm">
+            🔐
+          </div>
+          <h3 class="text-lg font-black text-slate-800">ホスト（管理者）ログイン</h3>
+        </div>
+        <button onclick="closeLoginModal()" class="text-slate-400 hover:text-slate-600 p-1">
+          ✕
+        </button>
+      </div>
+
+      <p class="text-xs text-slate-500 leading-relaxed">
+        集約された意見の一覧および管理機能はホスト専用です。管理者名と12桁のパスワードを入力してください。
+      </p>
+
+      <form id="loginForm" class="space-y-4">
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1">管理者名</label>
+          <input
+            type="text"
+            id="adminUser"
+            required
+            placeholder="管理者"
+            class="w-full rounded-xl border border-slate-300 px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          />
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1">パスワード（12桁）</label>
+          <input
+            type="password"
+            id="adminPass"
+            required
+            placeholder="12桁のパスワードを入力"
+            class="w-full rounded-xl border border-slate-300 px-3.5 py-2.5 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          />
+        </div>
+
+        <p id="loginError" class="hidden text-xs font-bold text-rose-600 bg-rose-50 border border-rose-200 rounded-lg p-2.5">
+          管理者名またはパスワードが正しくありません。
+        </p>
+
+        <button
+          type="submit"
+          class="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-2.5 rounded-xl text-sm transition"
+        >
+          ホストページに入る
+        </button>
+      </form>
+
+      <!-- 管理者本人確認用の控え -->
+      <div class="bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs text-slate-600 flex items-center justify-between">
+        <div>
+          <span class="font-bold text-slate-700">設定済み認証情報:</span><br>
+          名前: <code class="font-mono font-bold text-indigo-700">管理者</code> / PW: <code class="font-mono font-bold text-indigo-700">PyQ9#mK7$vL2</code>
+        </div>
+        <button
+          type="button"
+          onclick="fillAdminCredentials()"
+          class="bg-white hover:bg-slate-100 border border-slate-300 text-slate-700 font-bold px-2.5 py-1.5 rounded-lg text-xs shrink-0"
+        >
+          自動入力
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ==========================================
+    // 管理者認証設定（名前: 管理者 / 12桁パスワード）
+    // ==========================================
+    const ADMIN_NAME = "管理者";
+    const ADMIN_PASS = "PyQ9#mK7$vL2"; // 12桁
+
+    // ローカルストレージキー
+    const STORAGE_KEY_OPINIONS = "py_quiz_opinions_v2";
+    const STORAGE_KEY_NOTICE = "py_quiz_notice_v2";
+    const STORAGE_KEY_AUTH = "py_quiz_host_auth_v2";
+
+    // デフォルトのお知らせ
+    const defaultNotice = {
+      title: "次回のPython初心者向けクイズ大会に向けて意見を募集中です！",
+      body: "いつも参加ありがとうございます！次回のクイズ大会をより楽しく・分かりやすくするために、みなさんのご意見を募集しています。\n・「こんなテーマ（if文、リスト、関数など）の問題が欲しい！」\n・「4択だけじゃなく複数選択や穴埋め問題もやってみたい」\nなど、下のフォームから気軽に送ってください！（※送られた意見はホストのみが確認します）",
+      updatedAt: "2026/11/23 更新"
+    };
+
+    // 初期サンプル意見データ（ノートブックの過去のやり取り内容を反映）
+    const defaultOpinions = [
+      {
+        id: "op-1",
+        name: "初心者A",
+        category: "問題テーマの要望",
+        level: "超初心者向け",
+        text: "実行してもエラーは出ないのに、print() を書き忘れて画面に何も表示されない「初心者がハマる罠」みたいな問題があると盛り上がりそうです！",
+        status: "採用済み",
+        hostNote: "4行程度の超シンプルコードで出題予定。解説もわかりやすくする。",
+        createdAt: "2026/11/22 14:20"
+      },
+      {
+        id: "op-2",
+        name: "パイソン好き",
+        category: "出題形式のアイデア",
+        level: "初級向け",
+        text: "1つのプログラム（10〜15行くらい）を見て、正しい説明をすべて選ぶ「複数選択問題」や、関数名・変数名を当てる「穴埋め問題」をもっと増やしてほしいです！",
+        status: "検討中",
+        hostNote: "RPGのステータス（HPや所持金）をテーマにした15行前後の複数選択問題を作成中。",
+        createdAt: "2026/11/22 18:05"
+      },
+      {
+        id: "op-3",
+        name: "匿名参加者",
+        category: "難易度・行数の希望",
+        level: "中級ステップアップ",
+        text: "短いコードだけでなく、25〜30行くらいの少し長めのプログラムを上から順に追いかけて出力結果を当てる問題にも挑戦してみたいです。",
+        status: "未確認",
+        hostNote: "",
+        createdAt: "2026/11/23 10:40"
+      }
+    ];
+
+    // 状態管理
+    let isHostLoggedIn = sessionStorage.getItem(STORAGE_KEY_AUTH) === "true";
+    let currentTab = isHostLoggedIn ? "host" : "public";
+
+    function loadNotice() {
+      const saved = localStorage.getItem(STORAGE_KEY_NOTICE);
+      return saved ? JSON.parse(saved) : defaultNotice;
+    }
+
+    function loadOpinions() {
+      const saved = localStorage.getItem(STORAGE_KEY_OPINIONS);
+      if (saved) return JSON.parse(saved);
+      localStorage.setItem(STORAGE_KEY_OPINIONS, JSON.stringify(defaultOpinions));
+      return defaultOpinions;
+    }
+
+    function saveOpinions(list) {
+      localStorage.setItem(STORAGE_KEY_OPINIONS, JSON.stringify(list));
+    }
+
+    // 画面描画の初期化
+    function renderAll() {
+      renderHeader();
+      renderNotice();
+
+      const publicView = document.getElementById("publicView");
+      const hostView = document.getElementById("hostView");
+
+      if (isHostLoggedIn && currentTab === "host") {
+        publicView.classList.add("hidden");
+        hostView.classList.remove("hidden");
+        renderOpinions();
+      } else {
+        publicView.classList.remove("hidden");
+        hostView.classList.add("hidden");
+      }
+    }
+
+    // ヘッダーボタン描画
+    function renderHeader() {
+      const container = document.getElementById("headerActions");
+      if (isHostLoggedIn) {
+        container.innerHTML = `
+          <div class="flex items-center gap-2">
+            <button
+              onclick="switchTab('${currentTab === 'host' ? 'public' : 'host'}')"
+              class="bg-indigo-800 hover:bg-indigo-900 text-indigo-100 text-xs font-bold px-3 py-2 rounded-xl border border-indigo-500 transition"
+            >
+              ${currentTab === 'host' ? '参加者画面を見る' : 'ホスト管理画面へ'}
+            </button>
+            <button
+              onclick="logoutHost()"
+              class="bg-rose-500 hover:bg-rose-600 text-white text-xs font-bold px-3 py-2 rounded-xl transition"
+            >
+              ログアウト
+            </button>
+          </div>
+        `;
+      } else {
+        container.innerHTML = `
+          <button
+            onclick="openLoginModal()"
+            class="bg-slate-900 hover:bg-slate-800 text-amber-300 text-xs sm:text-sm font-bold px-3.5 py-2 rounded-xl border border-slate-700 transition flex items-center gap-1.5"
+          >
+            <span>🔐</span>
+            <span>ホストログイン</span>
+          </button>
+        `;
+      }
+    }
+
+    // お知らせ描画
+    function renderNotice() {
+      const notice = loadNotice();
+      document.getElementById("noticeTitle").textContent = notice.title;
+      document.getElementById("noticeBody").textContent = notice.body;
+      document.getElementById("noticeUpdatedAt").textContent = notice.updatedAt;
+
+      const editTitle = document.getElementById("editNoticeTitle");
+      const editBody = document.getElementById("editNoticeBody");
+      if (editTitle && editBody) {
+        editTitle.value = notice.title;
+        editBody.value = notice.body;
+      }
+    }
+
+    // お知らせ保存（ホスト専用）
+    function saveNotice() {
+      if (!isHostLoggedIn) return;
+      const title = document.getElementById("editNoticeTitle").value.trim();
+      const body = document.getElementById("editNoticeBody").value.trim();
+      if (!title || !body) {
+        alert("タイトルと本文を入力してください。");
+        return;
+      }
+      const now = new Date();
+      const dateStr = `${now.getFullYear()}/${String(now.getMonth() + 1).padStart(2, "0")}/${String(now.getDate()).padStart(2, "0")} 更新`;
+      const updated = { title, body, updatedAt: dateStr };
+      localStorage.setItem(STORAGE_KEY_NOTICE, JSON.stringify(updated));
+      renderNotice();
+
+      const msg = document.getElementById("noticeSaveMsg");
+      msg.classList.remove("hidden");
+      setTimeout(() => msg.classList.add("hidden"), 2500);
+    }
+
+    // 意見投稿処理（一般参加者）
+    document.getElementById("opinionForm").addEventListener("submit", function (e) {
+      e.preventDefault();
+      const nameInput = document.getElementById("senderName").value.trim();
+      const category = document.getElementById("category").value;
+      const level = document.querySelector('input[name="level"]:checked').value;
+      const text = document.getElementById("opinionText").value.trim();
+
+      if (!text) return;
+
+      const now = new Date();
+      const createdAt = `${now.getFullYear()}/${String(now.getMonth() + 1).padStart(2, "0")}/${String(now.getDate()).padStart(2, "0")} ${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
+
+      const newOpinion = {
+        id: "op-" + Date.now(),
+        name: nameInput || "匿名参加者",
+        category,
+        level,
+        text,
+        status: "未確認",
+        hostNote: "",
+        createdAt
+      };
+
+      const opinions = loadOpinions();
+      opinions.unshift(newOpinion);
+      saveOpinions(opinions);
+
+      // フォームリセットと完了バナー表示
+      document.getElementById("opinionText").value = "";
+      const banner = document.getElementById("submitSuccessBanner");
+      banner.classList.remove("hidden");
+      setTimeout(() => banner.classList.add("hidden"), 5000);
+    });
+
+    // ホスト専用：意見一覧の描画
+    function renderOpinions() {
+      if (!isHostLoggedIn) return;
+      const opinions = loadOpinions();
+
+      // 統計更新
+      document.getElementById("statTotal").textContent = opinions.length;
+      document.getElementById("statUnread").textContent = opinions.filter(o => o.status === "未確認").length;
+      document.getElementById("statReviewing").textContent = opinions.filter(o => o.status === "検討中").length;
+      document.getElementById("statAdopted").textContent = opinions.filter(o => o.status === "採用済み").length;
+
+      // フィルタリング
+      const statusFilter = document.getElementById("filterStatus").value;
+      const categoryFilter = document.getElementById("filterCategory").value;
+      const keyword = document.getElementById("filterKeyword").value.trim().toLowerCase();
+
+      const filtered = opinions.filter(op => {
+        if (statusFilter !== "ALL" && op.status !== statusFilter) return false;
+        if (categoryFilter !== "ALL" && op.category !== categoryFilter) return false;
+        if (keyword) {
+          const target = `${op.name} ${op.text} ${op.hostNote} ${op.category}`.toLowerCase();
+          if (!target.includes(keyword)) return false;
+        }
+        return true;
+      });
+
+      const listEl = document.getElementById("opinionList");
+      if (filtered.length === 0) {
+        listEl.innerHTML = `
+          <div class="bg-white rounded-2xl border border-slate-200 p-10 text-center text-slate-400 text-sm">
+            条件に一致する意見はありません。
+          </div>
+        `;
+        return;
+      }
+
+      const statusColors = {
+        "未確認": "bg-rose-100 text-rose-700 border-rose-200",
+        "検討中": "bg-amber-100 text-amber-800 border-amber-200",
+        "採用済み": "bg-emerald-100 text-emerald-800 border-emerald-200",
+        "見送り": "bg-slate-100 text-slate-600 border-slate-200"
+      };
+
+      listEl.innerHTML = filtered.map(op => `
+        <article class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 space-y-4">
+          <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-3">
+            <div class="flex flex-wrap items-center gap-2">
+              <span class="text-xs font-bold px-2.5 py-1 rounded-lg border ${statusColors[op.status] || statusColors['未確認']}">
+                ${escapeHtml(op.status)}
+              </span>
+              <span class="text-xs font-bold bg-indigo-50 text-indigo-700 px-2.5 py-1 rounded-lg">
+                ${escapeHtml(op.category)}
+              </span>
+              <span class="text-xs font-bold bg-slate-100 text-slate-600 px-2.5 py-1 rounded-lg">
+                ${escapeHtml(op.level)}
+              </span>
+            </div>
+            <div class="text-xs text-slate-400">
+              投稿者: <span class="font-bold text-slate-600">${escapeHtml(op.name)}</span> ・ ${escapeHtml(op.createdAt)}
+            </div>
+          </div>
+
+          <!-- 意見本文 -->
+          <p class="text-slate-800 text-sm sm:text-base leading-relaxed whitespace-pre-wrap">${escapeHtml(op.text)}</p>
+
+          <!-- ホスト専用コントロール（ステータス変更・メモ・削除） -->
+          <div class="bg-slate-50 rounded-xl p-3.5 border border-slate-200 space-y-3">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+              <div class="flex items-center gap-2">
+                <label class="text-xs font-bold text-slate-600">ステータス:</label>
+                <select
+                  onchange="updateStatus('${op.id}', this.value)"
+                  class="rounded-lg border border-slate-300 bg-white px-2.5 py-1 text-xs font-bold"
+                >
+                  <option value="未確認" ${op.status === '未確認' ? 'selected' : ''}>未確認</option>
+                  <option value="検討中" ${op.status === '検討中' ? 'selected' : ''}>検討中</option>
+                  <option value="採用済み" ${op.status === '採用済み' ? 'selected' : ''}>採用済み</option>
+                  <option value="見送り" ${op.status === '見送り' ? 'selected' : ''}>見送り</option>
+                </select>
+              </div>
+              <button
+                onclick="deleteOpinion('${op.id}')"
+                class="text-xs text-rose-500 hover:text-rose-700 font-bold self-end sm:self-auto"
+              >
+                この意見を削除
+              </button>
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold text-slate-500 mb-1">ホスト用メモ（参加者には見えません）</label>
+              <div class="flex gap-2">
+                <input
+                  type="text"
+                  id="note-${op.id}"
+                  value="${escapeHtml(op.hostNote || '')}"
+                  placeholder="問題作成のメモや対応方針を記録..."
+                  class="flex-1 rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                />
+                <button
+                  onclick="saveHostNote('${op.id}')"
+                  class="bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold px-3 py-1.5 rounded-lg shrink-0"
+                >
+                  メモ保存
+                </button>
+              </div>
+            </div>
+          </div>
+        </article>
+      `).join("");
+    }
+
+    function updateStatus(id, newStatus) {
+      if (!isHostLoggedIn) return;
+      const opinions = loadOpinions();
+      const target = opinions.find(o => o.id === id);
+      if (target) {
+        target.status = newStatus;
+        saveOpinions(opinions);
+        renderOpinions();
+      }
+    }
+
+    function saveHostNote(id) {
+      if (!isHostLoggedIn) return;
+      const input = document.getElementById(`note-${id}`);
+      const opinions = loadOpinions();
+      const target = opinions.find(o => o.id === id);
+      if (target && input) {
+        target.hostNote = input.value.trim();
+        saveOpinions(opinions);
+        alert("ホスト用メモを保存しました。");
+      }
+    }
+
+    function deleteOpinion(id) {
+      if (!isHostLoggedIn) return;
+      if (!confirm("この意見を完全に削除してもよろしいですか？")) return;
+      const opinions = loadOpinions().filter(o => o.id !== id);
+      saveOpinions(opinions);
+      renderOpinions();
+    }
+
+    // CSV出力（ホスト専用）
+    function exportCSV() {
+      if (!isHostLoggedIn) return;
+      const opinions = loadOpinions();
+      const headers = ["ID", "投稿日時", "投稿者", "種類", "レベル感", "ステータス", "意見内容", "ホストメモ"];
+      const rows = opinions.map(o => [
+        o.id,
+        o.createdAt,
+        o.name,
+        o.category,
+        o.level,
+        o.status,
+        `"${(o.text || "").replace(/"/g, '""')}"`,
+        `"${(o.hostNote || "").replace(/"/g, '""')}"`
+      ]);
+      const csvContent = "\uFEFF" + [headers.join(","), ...rows.map(r => r.join(","))].join("\n");
+      const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `python_quiz_opinions_${new Date().toISOString().slice(0, 10)}.csv`;
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    // ログインモーダル制御
+    function openLoginModal() {
+      document.getElementById("loginError").classList.add("hidden");
+      document.getElementById("loginModal").classList.remove("hidden");
+    }
+
+    function closeLoginModal() {
+      document.getElementById("loginModal").classList.add("hidden");
+    }
+
+    function fillAdminCredentials() {
+      document.getElementById("adminUser").value = ADMIN_NAME;
+      document.getElementById("adminPass").value = ADMIN_PASS;
+    }
+
+    document.getElementById("loginForm").addEventListener("submit", function (e) {
+      e.preventDefault();
+      const user = document.getElementById("adminUser").value.trim();
+      const pass = document.getElementById("adminPass").value;
+
+      if (user === ADMIN_NAME && pass === ADMIN_PASS) {
+        isHostLoggedIn = true;
+        sessionStorage.setItem(STORAGE_KEY_AUTH, "true");
+        currentTab = "host";
+        closeLoginModal();
+        renderAll();
+      } else {
+        document.getElementById("loginError").classList.remove("hidden");
+      }
+    });
+
+    function logoutHost() {
+      isHostLoggedIn = false;
+      sessionStorage.removeItem(STORAGE_KEY_AUTH);
+      currentTab = "public";
+      renderAll();
+    }
+
+    function switchTab(tab) {
+      if (tab === "host" && !isHostLoggedIn) {
+        openLoginModal();
+        return;
+      }
+      currentTab = tab;
+      renderAll();
+    }
+
+    function escapeHtml(str) {
+      if (!str) return "";
+      return str
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+
+    // 初期表示
+    renderAll();
+  </script>
+</body>
 </html>
